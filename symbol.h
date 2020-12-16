@@ -29,44 +29,45 @@ class symbol
         inline void setIndex(int index) { this->index = index; }
         symbolType &getIdType();
 };
-class funcSymbol:public symbol{
-    private:
-        std::vector<symbolType> kvargs;
-    public:
-        funcSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs);
-};
+// class funcSymbol:public symbol{
+//     private:
+//         std::vector<symbolType> kvargs;
+//     public:
+//         funcSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs);
+// };
 
-class funcSymbolTable
-{
-    private:
-        std::unordered_map<std::string, funcSymbol *> funcSymbolMap;
-        int addSymbol(funcSymbol *s);
-    public:
-        funcSymbol *ifExist(std::string name);
-        int addSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs);
-};
-
+// class funcSymbolTable
+// {
+//     private:
+//         std::unordered_map<std::string, funcSymbol *> funcSymbolMap;
+//         int addSymbol(funcSymbol *s);
+//     public:
+//         funcSymbol *ifExist(std::string name);
+//         int addSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs);
+// };
 class symbolTable
 {
     private:
+        int symbolItemCount;
+        int totalOffset;
         std::unordered_map<std::string, symbol *> symbolMap;
         std::vector<symbolTable*>tablelist;
         symbolTable* parent; 
-        int isbase=0;
-        symbol *ifExist(std::string name);
-        int addSymbol(symbol *s);
         
+        symbol *ifExist(std::string name);
+        int addSymbol(symbol *s);     
     public:
+        int isbase;
         symbolTable* using_table;
         void deletetable();
         symbolTable();
         symbolTable(symbolTable*parent,int isfun);
         symbolTable(symbolTable*s);
         int addSymbol(std::string name,symbolType type);
-        int addArraySymbol(std::string name);
+        int addArraySymbol(std::string name,int length);
         symbolTable* createSon(int isfun);
-        symbol* findSymbol(std::string name);
+        int findSymbol(std::string name);
 };
 extern symbolTable base;
-
+extern int funcflag;
 #endif

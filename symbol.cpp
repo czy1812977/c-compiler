@@ -3,11 +3,10 @@
 #include <vector>
 #include "./symbol.h"
 
-
-
 symbol::symbol(){
     }
 symbol::symbol(std::string Name,symbolType Type){
+
     this->Name = Name;
     this->Type = Type;
     }
@@ -35,14 +34,21 @@ int symbolTable::addSymbol(symbol *s){
         return -1;       
 }
 symbolTable::symbolTable(){
+    this->isbase=0;
+     this->symbolItemCount = 0;
+     this->totalOffset = 4;
     tablelist.push_back(this);
     this->using_table=this;
 }
 symbolTable::symbolTable(symbolTable*parent,int isfun){
+        this->symbolItemCount = 0;
+        this->totalOffset = 4;
         this->parent=parent;
         this->isbase=1; 
 }
 symbolTable::symbolTable(symbolTable*s){
+        s->totalOffset=this->totalOffset;
+        s->symbolItemCount=this->symbolItemCount;
         s->isbase=this->isbase;
         s->parent=this->parent;
         s->symbolMap=this->symbolMap;
@@ -51,16 +57,22 @@ symbolTable::symbolTable(symbolTable*s){
 }
 int symbolTable::addSymbol(std::string name,symbolType type){
     symbol *s =new symbol(name,type);
+    s->setIndex(this->using_table->symbolItemCount++);
+    s->setOffset(this->using_table->totalOffset);
+    this->totalOffset+=OFFSET;
     return this->addSymbol(s);
 };
-int symbolTable::addArraySymbol(std::string name){
+int symbolTable::addArraySymbol(std::string name,int length){
     symbol *s =new symbol(name,symbolType::Array);
+    s->setIndex(this->using_table->symbolItemCount++);
+    s->setOffset(this->using_table->totalOffset);
+    this->totalOffset+=length*4;
     return this->addSymbol(s);
 }
 symbolTable* symbolTable::createSon(int isfun){
     symbolTable *SST=new symbolTable(this,isfun);
-    this->tablelist.push_back(SST);
     SST->using_table=SST;
+    this->tablelist.push_back(SST);
     this->using_table=SST;
     return SST;
 }
@@ -68,46 +80,39 @@ void symbolTable::deletetable(){
     this->tablelist.pop_back();
     this->using_table=tablelist.back();
 }
-symbol* symbolTable::findSymbol(std::string name){
+int symbolTable::findSymbol(std::string name){
     std::unordered_map<std::string, symbol *>::iterator i;
     i = this->symbolMap.find(name);
     if (i != this->symbolMap.end())
-        return i->second;
+        return 1;
+    else if(this->isbase==0 )return 2;
     else
-        {std::unordered_map<std::string, symbol *>::iterator i_1;
-            i_1 = this->parent->symbolMap.find(name);
-            if (i_1!= this->parent->symbolMap.end())
-            {
-                addSymbol(i_1->second);
-                return i_1->second;
-            }
-            else if (this->parent->isbase ==0)
-                return NULL;
-            else return this->parent->findSymbol(name);
-        }
+    return this->parent->findSymbol(name);
 }
-funcSymbol *funcSymbolTable::ifExist(std::string name){
-    std::unordered_map<std::string, funcSymbol *>::iterator i;
-    i = this->funcSymbolMap.find(name);
-    if (i != this->funcSymbolMap.end())
-        return i->second;
-    else
-        return NULL;
+// funcSymbol *funcSymbolTable::ifExist(std::string name){
+//     std::unordered_map<std::string, funcSymbol *>::iterator i;
+//     i = this->funcSymbolMap.find(name);
+//     if (i != this->funcSymbolMap.end())
+//         return i->second;
+//     else
+//         return NULL;
 
-}
-funcSymbol::funcSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs){
-    this->Name=Name;
-    this->Type=Type;
-    this->kvargs=kvargs;
-};
+// }
+// funcSymbol::funcSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs){
+//     this->Name=Name;
+//     this->Type=Type;
+//     this->kvargs=kvargs;
+// };
        
-int funcSymbolTable::addSymbol(funcSymbol *s){
-    if (this->ifExist(s->getIdName()) == NULL)
-    {
-        this->funcSymbolMap[s->getIdName()] = s;
-        return 0;
-    }
-    else
-        return -1;       
-}
+// int funcSymbolTable::addSymbol(funcSymbol *s){
+//     if (this->ifExist(s->getIdName()) == NULL)
+//     {
+//         this->funcSymbolMap[s->getIdName()] = s;
+//         return 0;
+//     }
+//     else
+//         return -1;       
+// }
 symbolTable base;
+int funcflag=-1;
+

@@ -7,13 +7,13 @@ int main() {
 		
 	}
 	for (int i = 0; i < 10; i = i + 1) {
-		asd =asd +1;
 		int asd;
+		asd =asd +1;
+		
 	}
 	while (b > 0) {
-		d = d * 2;
+		
 		int asd;
 	}
-	int asd;
 	return b;
 }

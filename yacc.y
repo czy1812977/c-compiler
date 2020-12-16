@@ -79,11 +79,11 @@ external_declaration_list:
 /* Declarators */
 variable_declaration: 
     ID                                                  { if ($1->idname!=NULL) if(base.using_table->addSymbol($1->idname,symbolType::integer) ==-1) yyerror("ERROR: repeated declaration!"); $$ = newAstnode("variable_declaration","",1,$1);}
-    | ID '[' INT ']'                                    { if ($1->idname!=NULL) if(base.using_table->addArraySymbol($1->idname) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("variable_declaration","",4,$1,$2,$3,$4);}
+    | ID '[' INT ']'                                    { if ($1->idname!=NULL) if(base.using_table->addArraySymbol($1->idname,$3->value) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("variable_declaration","",4,$1,$2,$3,$4);}
     ;
 function_declaration: 
-    ID '(' variable_list ')'                             { if ($1->idname!=NULL) if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("function_declaration","",4,$1,$2,$3,$4);}
-    | ID '(' ')'                                        { if ($1->idname!=NULL) if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("function_declaration","",3,$1,$2,$3);}
+    ID '(' variable_list ')'                            { funcflag=1;if ($1->idname!=NULL) if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("function_declaration","",4,$1,$2,$3,$4);}
+    | ID '(' ')'                                        { funcflag=1;if ($1->idname!=NULL) if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("function_declaration","",3,$1,$2,$3);}
     ;
 
 variable_list:      
@@ -166,11 +166,11 @@ expression:
     | '(' expression ')'                                { $$ = newAstnode("expression","",3,$1,$2,$3);}
     | '-' expression                                    { $$ = newAstnode("expression","",2,$1,$2);}
     | NOT expression                                    { $$ = newAstnode("expression","",2,$1,$2);}
-    | ID '(' Args ')'                                   { $$ = newAstnode("expression","",4,$1,$2,$3,$4);}
-    | ID '(' ')'                                        { $$ = newAstnode("expression","",3,$1,$2,$3);}
+    | ID '(' Args ')'                                   { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
+    | ID '(' ')'                                        { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",3,$1,$2,$3);}
     | expression '[' expression ']'                     { $$ = newAstnode("expression","",4,$1,$2,$3,$4);}
-    | ID                                                { $$ = newAstnode("expression","",1,$1);}
-    | ID '[' expression ']'                             { $$ = newAstnode("expression","",4,$1,$2,$3,$4);}
+    | ID                                                { if(base.using_table->findSymbol($1->idname)==2) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",1,$1);}
+    | ID '[' expression ']'                             { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
     | INT                                               { $$ = newAstnode("expression","",1,$1);}
     | error ')'                                         { yyerrok; }
     ;

@@ -1562,19 +1562,19 @@ yyreduce:
 
   case 12:
 #line 82 "yacc.y"
-                                                        { if ((yyvsp[-3].ast)->idname!=NULL) if(base.using_table->addArraySymbol((yyvsp[-3].ast)->idname) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("variable_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if ((yyvsp[-3].ast)->idname!=NULL) if(base.using_table->addArraySymbol((yyvsp[-3].ast)->idname,(yyvsp[-1].ast)->value) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("variable_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1567 "yacc.tab.cpp"
     break;
 
   case 13:
 #line 85 "yacc.y"
-                                                         { if ((yyvsp[-3].ast)->idname!=NULL) if(base.using_table->addSymbol((yyvsp[-3].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { funcflag=1;if ((yyvsp[-3].ast)->idname!=NULL) if(base.using_table->addSymbol((yyvsp[-3].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1573 "yacc.tab.cpp"
     break;
 
   case 14:
 #line 86 "yacc.y"
-                                                        { if ((yyvsp[-2].ast)->idname!=NULL) if(base.using_table->addSymbol((yyvsp[-2].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { funcflag=1;if ((yyvsp[-2].ast)->idname!=NULL) if(base.using_table->addSymbol((yyvsp[-2].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1579 "yacc.tab.cpp"
     break;
 
@@ -1874,13 +1874,13 @@ yyreduce:
 
   case 64:
 #line 169 "yacc.y"
-                                                        { (yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if(base.using_table->findSymbol((yyvsp[-3].ast)->idname)==NULL) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1879 "yacc.tab.cpp"
     break;
 
   case 65:
 #line 170 "yacc.y"
-                                                        { (yyval.ast) = newAstnode("expression","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if(base.using_table->findSymbol((yyvsp[-2].ast)->idname)==NULL) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1885 "yacc.tab.cpp"
     break;
 
@@ -1892,13 +1892,13 @@ yyreduce:
 
   case 67:
 #line 172 "yacc.y"
-                                                        { (yyval.ast) = newAstnode("expression","",1,(yyvsp[0].ast));}
+                                                        { if(base.using_table->findSymbol((yyvsp[0].ast)->idname)==2) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",1,(yyvsp[0].ast));}
 #line 1897 "yacc.tab.cpp"
     break;
 
   case 68:
 #line 173 "yacc.y"
-                                                        { (yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if(base.using_table->findSymbol((yyvsp[-3].ast)->idname)==NULL) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1903 "yacc.tab.cpp"
     break;
 

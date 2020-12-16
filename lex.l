@@ -57,8 +57,8 @@ ws    {delim}+
 ")"                               { yylval.ast = newAstnode(")",yytext,0,yylineno);return(')'); }
 "["                               { yylval.ast = newAstnode("[",yytext,0,yylineno);return('['); }
 "]"                               { yylval.ast = newAstnode("]",yytext,0,yylineno);return(']'); }
-"{"                               { base.createSon(1);yylval.ast = newAstnode("{",yytext,0,yylineno);return('{'); }
-"}"                               { base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
+"{"                               { base.createSon(funcflag);yylval.ast = newAstnode("{",yytext,0,yylineno);return('{'); }
+"}"                               { funcflag=0;base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
 {L}({D}|{L})*                     { yylval.ast = newAstnode("ID",yytext,0,yylineno); return(ID); }
 {D}{L}({D}|{L})*                  { yylval.ast = newAstnode("ERRID",yytext,0,yylineno);return (ERRID); }
 [ \t\v\f\r]+                      { }
