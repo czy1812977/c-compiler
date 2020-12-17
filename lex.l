@@ -5,13 +5,13 @@
 #include <string.h>
 #include <stdarg.h>
 #include "symbol.h"
+#include "gramtree.h"
 #include "yacc.tab.h"
 extern FILE * yyin;
 extern YYSTYPE yylval;
 extern int yylineno;
 extern int yylex(void);
 extern char* yytext;
-struct ASTNode *newAstnode(char* name,char* text,int num,...);
 %}
 D   [0-9]
 L   [a-zA-Z_]
