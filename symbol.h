@@ -29,22 +29,6 @@ class symbol
         inline void setIndex(int index) { this->index = index; }
         symbolType &getIdType();
 };
-// class funcSymbol:public symbol{
-//     private:
-//         std::vector<symbolType> kvargs;
-//     public:
-//         funcSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs);
-// };
-
-// class funcSymbolTable
-// {
-//     private:
-//         std::unordered_map<std::string, funcSymbol *> funcSymbolMap;
-//         int addSymbol(funcSymbol *s);
-//     public:
-//         funcSymbol *ifExist(std::string name);
-//         int addSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs);
-// };
 class symbolTable
 {
     private:
@@ -54,6 +38,7 @@ class symbolTable
         symbol *ifExist(std::string name);
         int addSymbol(symbol *s);     
     public:
+        std::vector<symbol*>templist;
         std::vector<symbolTable*>tablelist;
         symbolTable* parent; 
         int isbase;
@@ -62,6 +47,8 @@ class symbolTable
         symbolTable();
         symbolTable(symbolTable*parent,int isfun);
         symbolTable(symbolTable*s);
+        void addIntoTemp(std::string name,symbolType type);
+        void addFromTemp();
         int addSymbol(std::string name,symbolType type);
         int addArraySymbol(std::string name,int length);
         symbolTable* createSon();

@@ -41,12 +41,6 @@ symbolTable::symbolTable(){
     this->tablelist.push_back(this);
     this->using_table=this;
 }
-// symbolTable::symbolTable(symbolTable*parent,int isfun){
-//         this->symbolItemCount = 0;
-//         this->totalOffset = 4;
-//         this->parent=parent;
-//         this->isbase=1; 
-// }
 symbolTable::symbolTable(symbolTable*s){
         s->totalOffset=this->totalOffset;
         s->symbolItemCount=this->symbolItemCount;
@@ -61,12 +55,7 @@ int symbolTable::addSymbol(std::string name,symbolType type){
     s->setIndex(this->using_table->symbolItemCount++);
     s->setOffset(this->using_table->totalOffset);
     this->totalOffset+=OFFSET;
-    
-//     for (auto iter = this->symbolMap.begin(); iter != this->symbolMap.end(); iter++)
-// {
-//     std::cout << iter->second->getIdName() << std::endl;
-//     std::cout << this->isbase<<std::endl;
-// }
+
     return this->addSymbol(s);
 };
 int symbolTable::addArraySymbol(std::string name,int length){
@@ -97,30 +86,19 @@ int symbolTable::findSymbol(std::string name){
     else
     return this->parent->findSymbol(name);
 }
-// funcSymbol *funcSymbolTable::ifExist(std::string name){
-//     std::unordered_map<std::string, funcSymbol *>::iterator i;
-//     i = this->funcSymbolMap.find(name);
-//     if (i != this->funcSymbolMap.end())
-//         return i->second;
-//     else
-//         return NULL;
+void symbolTable::addIntoTemp(std::string name,symbolType type){
+    symbol *s =new symbol(name,type);
+    this->templist.push_back(s);
+}
+void symbolTable::addFromTemp(){
+    int length=this->parent->templist.size();
+    for (int i=1;i<=length;i++)
+    {
+        this->addSymbol(this->parent->templist.back());
+        this->parent->templist.pop_back();
+    }
 
-// }
-// funcSymbol::funcSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs){
-//     this->Name=Name;
-//     this->Type=Type;
-//     this->kvargs=kvargs;
-// };
-       
-// int funcSymbolTable::addSymbol(funcSymbol *s){
-//     if (this->ifExist(s->getIdName()) == NULL)
-//     {
-//         this->funcSymbolMap[s->getIdName()] = s;
-//         return 0;
-//     }
-//     else
-//         return -1;       
-// }
+};
 symbolTable base;
 int funcflag=-1;
 
