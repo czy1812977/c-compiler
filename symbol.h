@@ -40,6 +40,7 @@ class symbolTable
     public:
         std::vector<symbol*>templist;
         std::vector<symbolTable*>tablelist;
+        std::vector<symbol*>templist;
         symbolTable* parent; 
         int isbase;
         symbolTable* using_table;
@@ -47,7 +48,7 @@ class symbolTable
         symbolTable();
         symbolTable(symbolTable*parent,int isfun);
         symbolTable(symbolTable*s);
-        void addIntoTemp(std::string name,symbolType type);
+        int addIntoTemp(std::string name,symbolType type);
         void addFromTemp();
         int addSymbol(std::string name,symbolType type);
         int addArraySymbol(std::string name,int length);

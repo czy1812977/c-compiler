@@ -86,9 +86,15 @@ int symbolTable::findSymbol(std::string name){
     else
     return this->parent->findSymbol(name);
 }
-void symbolTable::addIntoTemp(std::string name,symbolType type){
+
+int symbolTable::addIntoTemp(std::string name,symbolType type){
     symbol *s =new symbol(name,type);
     this->templist.push_back(s);
+    for (auto val : this->templist)
+        if (val->getIdName()== name)
+            return -1;
+    return 0;
+
 }
 void symbolTable::addFromTemp(){
     int length=this->parent->templist.size();

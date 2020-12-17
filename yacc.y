@@ -77,7 +77,7 @@ variable_list:
     | param_declaration                                 { $$ = newAstnode("variable_list","",1,$1);}
     ;
 param_declaration: 
-    TYPE ID                                             { $$ = newAstnode("param_declaration","",2,$1,$2);}
+    TYPE ID                                             { if(base.using_table->addIntoTemp($2->idname,symbolType::integer)==-1);yyerror("ERROR: repeated declaration!");$$ = newAstnode("param_declaration","",2,$1,$2);}
     | TYPE                                              { $$ = newAstnode("param_declaration","",1,$1);}
     ;                   
 
