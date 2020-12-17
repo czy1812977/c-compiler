@@ -51,12 +51,11 @@ class symbolTable
         int symbolItemCount;
         int totalOffset;
         std::unordered_map<std::string, symbol *> symbolMap;
-        std::vector<symbolTable*>tablelist;
-        symbolTable* parent; 
-        
         symbol *ifExist(std::string name);
         int addSymbol(symbol *s);     
     public:
+        std::vector<symbolTable*>tablelist;
+        symbolTable* parent; 
         int isbase;
         symbolTable* using_table;
         void deletetable();
@@ -65,7 +64,7 @@ class symbolTable
         symbolTable(symbolTable*s);
         int addSymbol(std::string name,symbolType type);
         int addArraySymbol(std::string name,int length);
-        symbolTable* createSon(int isfun);
+        symbolTable* createSon();
         int findSymbol(std::string name);
 };
 extern symbolTable base;

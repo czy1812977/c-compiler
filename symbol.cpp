@@ -1,4 +1,5 @@
 #include <string>
+#include<iostream>
 #include <unordered_map>
 #include <vector>
 #include "./symbol.h"
@@ -35,17 +36,17 @@ int symbolTable::addSymbol(symbol *s){
 }
 symbolTable::symbolTable(){
     this->isbase=0;
-     this->symbolItemCount = 0;
-     this->totalOffset = 4;
-    tablelist.push_back(this);
+    this->symbolItemCount = 0;
+    this->totalOffset = 4;
+    this->tablelist.push_back(this);
     this->using_table=this;
 }
-symbolTable::symbolTable(symbolTable*parent,int isfun){
-        this->symbolItemCount = 0;
-        this->totalOffset = 4;
-        this->parent=parent;
-        this->isbase=1; 
-}
+// symbolTable::symbolTable(symbolTable*parent,int isfun){
+//         this->symbolItemCount = 0;
+//         this->totalOffset = 4;
+//         this->parent=parent;
+//         this->isbase=1; 
+// }
 symbolTable::symbolTable(symbolTable*s){
         s->totalOffset=this->totalOffset;
         s->symbolItemCount=this->symbolItemCount;
@@ -60,6 +61,12 @@ int symbolTable::addSymbol(std::string name,symbolType type){
     s->setIndex(this->using_table->symbolItemCount++);
     s->setOffset(this->using_table->totalOffset);
     this->totalOffset+=OFFSET;
+    
+//     for (auto iter = this->symbolMap.begin(); iter != this->symbolMap.end(); iter++)
+// {
+//     std::cout << iter->second->getIdName() << std::endl;
+//     std::cout << this->isbase<<std::endl;
+// }
     return this->addSymbol(s);
 };
 int symbolTable::addArraySymbol(std::string name,int length){
@@ -69,9 +76,10 @@ int symbolTable::addArraySymbol(std::string name,int length){
     this->totalOffset+=length*4;
     return this->addSymbol(s);
 }
-symbolTable* symbolTable::createSon(int isfun){
-    symbolTable *SST=new symbolTable(this,isfun);
-    SST->using_table=SST;
+symbolTable* symbolTable::createSon(){
+    symbolTable *SST=new symbolTable();
+    SST->parent=this->using_table;
+    SST->isbase=1;
     this->tablelist.push_back(SST);
     this->using_table=SST;
     return SST;
@@ -85,7 +93,7 @@ int symbolTable::findSymbol(std::string name){
     i = this->symbolMap.find(name);
     if (i != this->symbolMap.end())
         return 1;
-    else if(this->isbase==0 )return 2;
+    else if(this->isbase==0)return 2;
     else
     return this->parent->findSymbol(name);
 }

@@ -982,12 +982,12 @@ YY_RULE_SETUP
 case 36:
 YY_RULE_SETUP
 #line 60 "lex.l"
-{ base.createSon(funcflag);yylval.ast = newAstnode("{",yytext,0,yylineno);return('{'); }
+{ base.createSon(); yylval.ast = newAstnode("{",yytext,0,yylineno);return('{'); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 61 "lex.l"
-{ funcflag=0;base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
+{ base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP

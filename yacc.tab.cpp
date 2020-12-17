@@ -627,7 +627,7 @@ static const yytype_int8 yydefact[] =
       69,     0,    67,     0,     0,     0,     0,     0,     0,    28,
        0,    21,     0,     0,    17,     0,    13,    12,    42,    70,
        0,    30,     0,    49,     0,    45,    47,     0,     0,     0,
-      62,     0,    63,     0,     0,    19,    22,    25,    24,     0,
+      62,     0,    63,     0,     0,    19,    22,    24,    25,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
       15,    29,     0,    27,    26,     0,    65,    72,     0,     0,
        0,     0,     0,     0,    43,    44,    61,     0,     0,    51,
@@ -1556,25 +1556,25 @@ yyreduce:
 
   case 11:
 #line 81 "yacc.y"
-                                                        { if ((yyvsp[0].ast)->idname!=NULL) if(base.using_table->addSymbol((yyvsp[0].ast)->idname,symbolType::integer) ==-1) yyerror("ERROR: repeated declaration!"); (yyval.ast) = newAstnode("variable_declaration","",1,(yyvsp[0].ast));}
+                                                        { if(base.using_table->addSymbol((yyvsp[0].ast)->idname,symbolType::integer) ==-1) yyerror("ERROR: repeated declaration!"); (yyval.ast) = newAstnode("variable_declaration","",1,(yyvsp[0].ast));}
 #line 1561 "yacc.tab.cpp"
     break;
 
   case 12:
 #line 82 "yacc.y"
-                                                        { if ((yyvsp[-3].ast)->idname!=NULL) if(base.using_table->addArraySymbol((yyvsp[-3].ast)->idname,(yyvsp[-1].ast)->value) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("variable_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if(base.using_table->addArraySymbol((yyvsp[-3].ast)->idname,(yyvsp[-1].ast)->value) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("variable_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1567 "yacc.tab.cpp"
     break;
 
   case 13:
 #line 85 "yacc.y"
-                                                        { funcflag=1;if ((yyvsp[-3].ast)->idname!=NULL) if(base.using_table->addSymbol((yyvsp[-3].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { funcflag=1;if(base.using_table->addSymbol((yyvsp[-3].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1573 "yacc.tab.cpp"
     break;
 
   case 14:
 #line 86 "yacc.y"
-                                                        { funcflag=1;if ((yyvsp[-2].ast)->idname!=NULL) if(base.using_table->addSymbol((yyvsp[-2].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { funcflag=1;if(base.using_table->addSymbol((yyvsp[-2].ast)->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");(yyval.ast) = newAstnode("function_declaration","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1579 "yacc.tab.cpp"
     break;
 
@@ -1634,13 +1634,13 @@ yyreduce:
 
   case 24:
 #line 111 "yacc.y"
-                                                        { (yyval.ast) = newAstnode("statement","",1,(yyvsp[-1].ast));}
+                                                      { (yyval.ast) = newAstnode("statement","",1,(yyvsp[-1].ast));}
 #line 1639 "yacc.tab.cpp"
     break;
 
   case 25:
 #line 112 "yacc.y"
-                                                        { (yyval.ast) = newAstnode("statement","",1,(yyvsp[-1].ast));}
+                                                         { (yyval.ast) = newAstnode("statement","",1,(yyvsp[-1].ast));}
 #line 1645 "yacc.tab.cpp"
     break;
 
@@ -1874,13 +1874,13 @@ yyreduce:
 
   case 64:
 #line 169 "yacc.y"
-                                                        { if(base.using_table->findSymbol((yyvsp[-3].ast)->idname)==NULL) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if(base.using_table->findSymbol((yyvsp[-3].ast)->idname)==2) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1879 "yacc.tab.cpp"
     break;
 
   case 65:
 #line 170 "yacc.y"
-                                                        { if(base.using_table->findSymbol((yyvsp[-2].ast)->idname)==NULL) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if(base.using_table->findSymbol((yyvsp[-2].ast)->idname)==2) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",3,(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1885 "yacc.tab.cpp"
     break;
 
@@ -1898,7 +1898,7 @@ yyreduce:
 
   case 68:
 #line 173 "yacc.y"
-                                                        { if(base.using_table->findSymbol((yyvsp[-3].ast)->idname)==NULL) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
+                                                        { if(base.using_table->findSymbol((yyvsp[-3].ast)->idname)==2) yyerror("ERROR: haven`t declaration!");(yyval.ast) = newAstnode("expression","",4,(yyvsp[-3].ast),(yyvsp[-2].ast),(yyvsp[-1].ast),(yyvsp[0].ast));}
 #line 1903 "yacc.tab.cpp"
     break;
 
