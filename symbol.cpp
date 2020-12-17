@@ -97,30 +97,21 @@ int symbolTable::findSymbol(std::string name){
     else
     return this->parent->findSymbol(name);
 }
-// funcSymbol *funcSymbolTable::ifExist(std::string name){
-//     std::unordered_map<std::string, funcSymbol *>::iterator i;
-//     i = this->funcSymbolMap.find(name);
-//     if (i != this->funcSymbolMap.end())
-//         return i->second;
-//     else
-//         return NULL;
-
-// }
-// funcSymbol::funcSymbol(std::string Name,symbolType Type,std::vector<symbolType>kvargs){
-//     this->Name=Name;
-//     this->Type=Type;
-//     this->kvargs=kvargs;
-// };
-       
-// int funcSymbolTable::addSymbol(funcSymbol *s){
-//     if (this->ifExist(s->getIdName()) == NULL)
-//     {
-//         this->funcSymbolMap[s->getIdName()] = s;
-//         return 0;
-//     }
-//     else
-//         return -1;       
-// }
+int symbolTable::addIntoTemp(std::string name,symbolType type){
+    symbol *s =new symbol(name,type);
+    this->templist.push_back(s);
+    for (auto val : this->templist)
+        if (val->getIdName()== name)
+            return -1;
+    return 0;
+}
+void symbolTable::addFromTemp(){
+    int length=this->parent->templist.size();
+    for (int i=1;i<=length;i++)
+    {
+        this->addSymbol(this->parent->templist.back());
+        this->parent->templist.pop_back();
+    }
 symbolTable base;
 int funcflag=-1;
 

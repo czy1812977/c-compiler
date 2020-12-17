@@ -1,8 +1,8 @@
 int main() {
 	int asd = 1;
-	int b = 4, c;
+	int b = 4;
 	int d = 5;
-	int f(){	
+	int f(int b,int b){	
 		int asd;
 		b=10;
 		
