@@ -40,7 +40,6 @@ class symbolTable
     public:
         std::vector<symbol*>templist;
         std::vector<symbolTable*>tablelist;
-        std::vector<symbol*>templist;
         symbolTable* parent; 
         int isbase;
         symbolTable* using_table;
