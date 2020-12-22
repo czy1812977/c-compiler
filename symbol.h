@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "gramtree.h"
 #define OFFSET 4
 enum class symbolType
 {
@@ -12,22 +13,27 @@ enum class symbolType
     Array = 3,
 };
 
+bool canCalculate(ASTNode* a1,ASTNode* a2);
+
 class symbol
 {
     protected:
         std::string Name;
-        symbolType Type;
+        int param;
         int offset;
         int index;
-    public:
+    public: 
+		symbolType Type;
         symbol();
         symbol(std::string Name,symbolType Type);
         const std::string getIdName();
         inline int getOffset() { return offset; }
         inline int getIndex() { return index; }
+        inline int getParam() { return param; }
         inline void setOffset(int offset) { this->offset = offset; }
         inline void setIndex(int index) { this->index = index; }
-        symbolType &getIdType();
+        inline void setParam(int param) { this->param = param; }
+        symbolType getIdType();
 };
 class symbolTable
 {
@@ -52,7 +58,7 @@ class symbolTable
         int addSymbol(std::string name,symbolType type);
         int addArraySymbol(std::string name,int length);
         symbolTable* createSon();
-        int findSymbol(std::string name);
+        symbol* findSymbol(std::string name);
 };
 extern symbolTable base;
 extern int funcflag;

@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include "symbol.h"
 #include "gramtree.h"
+
 extern int yylex(void);
 extern char* yytext;
 extern FILE * yyin;
@@ -68,8 +69,8 @@ variable_declaration:
     | ID '[' INT ']'                                    { if(base.using_table->addArraySymbol($1->idname,$3->value) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("variable_declaration","",4,$1,$2,$3,$4);}
     ;
 function_declaration: 
-    ID '(' variable_list ')'                            { funcflag=1;if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("function_declaration","",4,$1,$2,$3,$4);}
-    | ID '(' ')'                                        { funcflag=1;if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("function_declaration","",3,$1,$2,$3);}
+    ID '(' variable_list ')'                            { funcflag=1;if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");base.using_table->findSymbol($1->idname)->setParam(base.using_table->templist.size());$$ = newAstnode("function_declaration","",4,$1,$2,$3,$4);}
+    | ID '(' ')'                                        { funcflag=1;if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");base.using_table->findSymbol($1->idname)->setParam(base.using_table->templist.size());$$ = newAstnode("function_declaration","",3,$1,$2,$3);}
     ;
 
 variable_list:      
@@ -77,8 +78,9 @@ variable_list:
     | param_declaration                                 { $$ = newAstnode("variable_list","",1,$1);}
     ;
 param_declaration: 
-    TYPE ID                                             { if(base.using_table->addIntoTemp($2->idname,symbolType::integer)==-1);yyerror("ERROR: repeated declaration!");$$ = newAstnode("param_declaration","",2,$1,$2);}
+    TYPE ID                                             { if(base.using_table->addIntoTemp($2->idname,symbolType::integer)==-1) yyerror("ERROR: repeated declaration!");$$ = newAstnode("param_declaration","",2,$1,$2);}
     | TYPE                                              { $$ = newAstnode("param_declaration","",1,$1);}
+	| TYPE ID '[' INT ']'								{ $$ = newAstnode("param_declaration","",5,$1,$2,$3,$4,$5);}
     ;                   
 
 /* Statements */
@@ -139,30 +141,30 @@ declaration:
 
 /* Expressions */
 expression:
-    expression '=' expression                           { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression AND expression                         { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression OR expression                          { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression RELOP expression                       { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression '+' expression                         { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression '-' expression                         { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression '*' expression                         { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression '/' expression                         { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression '%' expression                         { $$ = newAstnode("expression","",3,$1,$2,$3);}
-    | expression '^' expression                         { $$ = newAstnode("expression","",3,$1,$2,$3);}
+    expression '=' expression                           { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression AND expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression OR expression                          { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression RELOP expression                       { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression '+' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression '-' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression '*' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression '/' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression '%' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | expression '^' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
     | '(' expression ')'                                { $$ = newAstnode("expression","",3,$1,$2,$3);}
     | '-' expression                                    { $$ = newAstnode("expression","",2,$1,$2);}
     | NOT expression                                    { $$ = newAstnode("expression","",2,$1,$2);}
-    | ID '(' Args ')'                                   { if(base.using_table->findSymbol($1->idname)==2) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
-    | ID '(' ')'                                        { if(base.using_table->findSymbol($1->idname)==2) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | ID '(' Args ')'                                   { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");if(base.using_table->findSymbol($1->idname)->getParam()!=$3->funcParam)yyerror("The number of parameters does not match!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
+    | ID '(' ')'                                        { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");if(base.using_table->findSymbol($1->idname)->getParam()!=0)yyerror("The number of parameters does not match!");$$ = newAstnode("expression","",3,$1,$2,$3);}
     | expression '[' expression ']'                     { $$ = newAstnode("expression","",4,$1,$2,$3,$4);}
-    | ID                                                { if(base.using_table->findSymbol($1->idname)==2) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",1,$1);}
-    | ID '[' expression ']'                             { if(base.using_table->findSymbol($1->idname)==2) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
+    | ID                                                { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",1,$1);}
+    | ID '[' expression ']'                             { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
     | INT                                               { $$ = newAstnode("expression","",1,$1);}
     | error ')'                                         { yyerrok; }
     ;
 Args: 
-    Args ',' expression                                 { $$ = newAstnode("Args","",2,$1,$3);}
-    | expression                                        { $$ = newAstnode("Args","",1,$1);}
+    Args ',' expression                                 { $$ = newAstnode("Args","",2,$1,$3);$$->funcParam+=1;}
+    | expression                                        { $$ = newAstnode("Args","",1,$1);$$->funcParam=1;}
     ;
 
 %%

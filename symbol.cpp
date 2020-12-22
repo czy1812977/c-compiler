@@ -1,8 +1,72 @@
 #include <string>
+#include <string.h>
 #include<iostream>
 #include <unordered_map>
 #include <vector>
 #include "./symbol.h"
+#include "./gramtree.h"
+
+bool canCalculate(ASTNode* a1,ASTNode* a3){
+	bool flag1 = false;
+	bool flag2 = false;
+	if(a1->left->idname==NULL||
+		(base.using_table->findSymbol(a1->left->idname)->getIdType()==symbolType::integer)){
+			flag1 = true;
+		}
+	else if((base.using_table->findSymbol(a1->left->idname)->getIdType()==symbolType::Array)){
+		if(a1->left->right==NULL)flag1 = false;
+		else if(!strcmp(a1->left->right->name,"["))flag1 = true;
+	}
+	else if((base.using_table->findSymbol(a1->left->idname)->getIdType()==symbolType::function)){
+		if(a1->left->right==NULL)flag1 = false;
+		else if(!strcmp(a1->left->right->name,"("))flag1 = true;
+	}else{}
+	
+	if(a3->left->idname==NULL||
+		(base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::integer)){
+			flag2 = true;
+		}
+	else if((base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::Array)){
+		if(a3->left->right==NULL)flag1 = false;
+		else if(!strcmp(a3->left->right->name,"["))flag2 = true;	
+	}
+	else if((base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::function)){
+		if(a3->left->right==NULL)flag1 = false;
+		else if(!strcmp(a3->left->right->name,"("))flag2 = true;
+	}else{}
+
+/*	if(a3->left->idname==NULL||
+		(base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::integer)||
+		((base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::Array)&&(a3->left->right->name=="["))){
+			flag2 = true;
+		}*/
+	if(flag1&&flag2)return true;
+	return false;
+/*	
+	if(a1->left->idname!=NULL){
+		if(a3->left->idname!=NULL){
+			if((base.using_table->findSymbol(a1->left->idname)->getIdType()==symbolType::integer)||
+				((base.using_table->findSymbol(a1->left->idname)->getIdType()==symbolType::Array)&&(a1->left->right->name=="["))||
+				(base.using_table->findSymbol(a1->left->right->right->idname)->getIdType()== ymbolType::integer))
+
+			&& 
+				base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::integer){
+					return true;
+				}
+			else{
+				return false;
+			}
+		}else{
+			return true;
+		}
+	}else if(a3->left->idname!=NULL){
+		if(base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::integer)return true;
+		else return false;
+	}	
+	return true;
+	
+	*/
+}
 
 symbol::symbol(){
     }
@@ -14,7 +78,7 @@ symbol::symbol(std::string Name,symbolType Type){
 const std::string symbol::getIdName(){
     return this->Name;
     }
-symbolType &symbol::getIdType(){
+symbolType symbol::getIdType(){
     return this->Type;
 }
 symbol *symbolTable::ifExist(std::string name){
@@ -77,22 +141,22 @@ void symbolTable::deletetable(){
     this->tablelist.pop_back();
     this->using_table=tablelist.back();
 }
-int symbolTable::findSymbol(std::string name){
+symbol* symbolTable::findSymbol(std::string name){
     std::unordered_map<std::string, symbol *>::iterator i;
     i = this->symbolMap.find(name);
     if (i != this->symbolMap.end())
-        return 1;
-    else if(this->isbase==0)return 2;
+        return i->second;
+    else if(this->isbase==0)return NULL;
     else
     return this->parent->findSymbol(name);
 }
 
 int symbolTable::addIntoTemp(std::string name,symbolType type){
     symbol *s =new symbol(name,type);
-    this->templist.push_back(s);
-    for (auto val : this->templist)
+	for (auto val : this->templist)
         if (val->getIdName()== name)
             return -1;
+    this->templist.push_back(s);
     return 0;
 
 }

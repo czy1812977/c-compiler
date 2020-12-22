@@ -8,7 +8,8 @@ struct ASTNode
     struct ASTNode *left;  //第一个子节点
     struct ASTNode *right;  //兄弟节点
     char* idname; //id型节点的名字
-    int value;  //int型节点的    
+    int value;  //int型节点的   
+    int	funcParam;
 };
 void yyerror(const char *str);
 /*  创建节点函数  */
