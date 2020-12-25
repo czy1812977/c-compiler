@@ -22,6 +22,7 @@ class symbol
         int param;
         int offset;
         int index;
+		int value;
     public: 
 		symbolType Type;
         symbol();
@@ -30,9 +31,11 @@ class symbol
         inline int getOffset() { return offset; }
         inline int getIndex() { return index; }
         inline int getParam() { return param; }
+        inline int getValue() { return value; }
         inline void setOffset(int offset) { this->offset = offset; }
         inline void setIndex(int index) { this->index = index; }
         inline void setParam(int param) { this->param = param; }
+        inline void setValue(int value) { this->value = value; }
         symbolType getIdType();
 };
 class symbolTable
@@ -59,6 +62,7 @@ class symbolTable
         int addArraySymbol(std::string name,int length);
         symbolTable* createSon();
         symbol* findSymbol(std::string name);
+		void addFuncOffset();
 };
 extern symbolTable base;
 extern int funcflag;

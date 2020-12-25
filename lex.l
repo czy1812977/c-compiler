@@ -58,7 +58,7 @@ ws    {delim}+
 "["                               { yylval.ast = newAstnode("[",yytext,0,yylineno);return('['); }
 "]"                               { yylval.ast = newAstnode("]",yytext,0,yylineno);return(']'); }
 "{"                               { base.createSon();base.using_table->addFromTemp(); yylval.ast = newAstnode("{",yytext,0,yylineno);return('{'); }
-"}"                               { base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
+"}"                               { base.using_table->addFuncOffset();base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
 {L}({D}|{L})*                     { yylval.ast = newAstnode("ID",yytext,0,yylineno); return(ID); }
 {D}{L}({D}|{L})*                  { yylval.ast = newAstnode("ERRID",yytext,0,yylineno);return (ERRID); }
 [ \t\v\f\r]+                      { }

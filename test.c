@@ -1,16 +1,17 @@
 int main() {
-	int asd = 1;
-	int b = 4;
-	int d = 5;
-	int c[2];
+	int asd = 2;
+	int b = 30;
+	int d = 10;
+	asd = d*asd*b+d;
+/*	int c[2];
 	b = c[0] + c[1];
-	int f(int,int b){
+	int f(int b){
 		int asd;
 		b=10;
 
 	}
+	int k(){}
 	b = asd + f(2,3);
-	b = asd + f();
 	
 	for (int i = 0; i < 10; i = i + 1) {
 		b=10;
@@ -26,5 +27,6 @@ int main() {
 		
 		int asd;
 	}
-	return b;
+	*/
+	return asd;
 }

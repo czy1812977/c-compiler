@@ -129,6 +129,9 @@ int symbolTable::addArraySymbol(std::string name,int length){
     this->totalOffset+=length*4;
     return this->addSymbol(s);
 }
+void symbolTable::addFuncOffset(){
+	this->parent->totalOffset += this->totalOffset-4;
+}
 symbolTable* symbolTable::createSon(){
     symbolTable *SST=new symbolTable();
     SST->parent=this->using_table;
@@ -164,7 +167,7 @@ void symbolTable::addFromTemp(){
     int length=this->parent->templist.size();
     for (int i=1;i<=length;i++)
     {
-        this->addSymbol(this->parent->templist.back());
+        this->addSymbol(this->parent->templist.back()->getIdName(),this->parent->templist.back()->getIdType());
         this->parent->templist.pop_back();
     }
 
