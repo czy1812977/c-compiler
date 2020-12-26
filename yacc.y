@@ -1,12 +1,14 @@
 %{
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include "symbol.h"
 #include "gramtree.h"
 FILE *fp = fopen("output.asm","a+");
-int count = 1;
+ASTNode *temp;
+int funcParam = 1;
 
 extern int yylex(void);
 extern char* yytext;
@@ -57,7 +59,11 @@ external_definition_list:
 external_definition: 
     TYPE external_declaration_list ';'                  { $$ = newAstnode("external_definition","",2,$1,$2);}
     | TYPE ';'                                          { $$ = newAstnode("external_definition","",1,$1);}
-    | TYPE function_declaration  local_statement        { $$ = newAstnode("external_definition","",3,$1,$2,$3);}
+    | TYPE function_declaration  local_statement        { $$ = newAstnode("external_definition","",3,$1,$2,$3);
+															fputs("\tmov esp,ebp\n",fp);
+															fputs("\tpop ebp\n",fp);
+															fputs("\tret\n",fp);
+														}
     | TYPE function_declaration ';'                     { $$ = newAstnode("external_definition","",2,$1,$2);}
     ;
 external_declaration_list:
@@ -75,16 +81,21 @@ variable_declaration:
 function_declaration: 
     ID '(' variable_list ')'                            { funcflag=1;if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");
 															base.using_table->findSymbol($1->idname)->setParam(base.using_table->templist.size());
-															$$ = newAstnode("function_declaration","",4,$1,$2,$3,$4);}
+															$$ = newAstnode("function_declaration","",4,$1,$2,$3,$4);
+															fputs($1->idname,fp);
+															fputs(":\n",fp);
+															fputs("\tpush ebp\n",fp);
+															fputs("\tmov ebp,esp\n",fp);
+															fputs("\tsub esp,0x80\n",fp);	
+														}
     | ID '(' ')'                                        { funcflag=1;if(base.using_table->addSymbol($1->idname,symbolType::function) ==-1) yyerror("ERROR: repeated declaration!");
-															base.using_table->findSymbol($1->idname)->setParam(base.using_table->templist.size());
+															base.using_table->findSymbol($1->idname)->setParam(base.using_table->templist.size());															
 															$$ = newAstnode("function_declaration","",3,$1,$2,$3);
-															if(!strcmp($1->idname,"main")){
-																fputs("main:\n",fp);
-																fputs("\tpush ebp\n",fp);
-																fputs("\tmov ebp,esp\n",fp);
-																fputs("\tsub esp,0x20\n",fp);
-															}
+															fputs($1->idname,fp);
+															fputs(":\n",fp);	
+															fputs("\tpush ebp\n",fp);
+															fputs("\tmov ebp,esp\n",fp);
+															fputs("\tsub esp,0x80\n",fp);																													
 														}
     ;
 
@@ -129,8 +140,7 @@ statement:
 															else{
 																fputs("edx\n",fp);
 															}
-															fputs("\tcall print\n",fp);
-																
+															fputs("\tcall print\n",fp);																
 														}
     | RETURN ';'                                        { $$ = newAstnode("statement","",1,$1);}
     | IF '(' expression ')' statement                   { $$ = newAstnode("statement","",5,$1,$2,$3,$4,$5);}
@@ -169,7 +179,14 @@ declaration_list:
 declaration: 
     variable_declaration                                 {  $$ = newAstnode("declaration","",1,$1);}
     | variable_declaration '=' expression                { $$ = newAstnode("declaration","",3,$1,$2,$3);
-															if(!strcmp($3->left->name,"ID")){
+															printf("%s:%d\n",$1->left->idname,base.using_table->findSymbol($1->left->idname)->getOffset());		
+															if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") || 
+																($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
+																fputs("\tmov dword [ebp-",fp);
+																fprintf(fp,"%d",base.using_table->findSymbol($1->left->idname)->getOffset());
+																fputs("],edx\n",fp);
+															}
+															else if(!strcmp($3->left->name,"ID")){
 																fputs("\tmov eax,dword [ebp-",fp);
 																fprintf(fp,"%d",base.using_table->findSymbol($3->left->idname)->getOffset());
 																fputs("]\n",fp);
@@ -183,14 +200,8 @@ declaration:
 																fputs("],",fp);
 																fprintf(fp,"%d\n",$3->left->value);
 															}
-															else{
-																fputs("\tmov dword [ebp-",fp);
-																fprintf(fp,"%d",base.using_table->findSymbol($1->left->idname)->getOffset());
-																fputs("],edx\n",fp);	
-															}
-															count = 1;
-															printf("%s:%d\n",$1->left->idname,base.using_table->findSymbol($1->left->idname)->getOffset());
-
+															else{}
+															base.using_table->flag = 1;
 														 }
     ;
 
@@ -198,8 +209,14 @@ declaration:
 /* Expressions */
 expression:
     expression '=' expression                           { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);
-															printf("%s:%d\n",$1->left->idname,base.using_table->findSymbol($1->left->idname)->getOffset());							
-															if(!strcmp($3->left->name,"ID")){
+															printf("%s:%d\n",$1->left->idname,base.using_table->findSymbol($1->left->idname)->getOffset());		
+															if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") || 
+																($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
+																fputs("\tmov dword [ebp-",fp);
+																fprintf(fp,"%d",base.using_table->findSymbol($1->left->idname)->getOffset());
+																fputs("],edx\n",fp);
+															}
+															else if(!strcmp($3->left->name,"ID")){
 																fputs("\tmov eax,dword [ebp-",fp);
 																fprintf(fp,"%d",base.using_table->findSymbol($3->left->idname)->getOffset());
 																fputs("]\n",fp);
@@ -213,12 +230,8 @@ expression:
 																fputs("],",fp);
 																fprintf(fp,"%d\n",$3->left->value);
 															}
-															else{
-																fputs("\tmov dword [ebp-",fp);
-																fprintf(fp,"%d",base.using_table->findSymbol($1->left->idname)->getOffset());
-																fputs("],edx\n",fp);	
-															}
-															count = 1;
+															else{}
+															base.using_table->flag = 1;
 														}
     | expression AND expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
     | expression OR expression                          { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
@@ -226,8 +239,10 @@ expression:
 															
 														}
     | expression '+' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);
-															if(!strcmp($1->left->name,"expression") || !strcmp($1->left->name,"(")){
-																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(")){
+															if(!strcmp($1->left->name,"expression") || !strcmp($1->left->name,"(") || 
+																($1->left->right!=NULL && !strcmp($1->left->name,"ID") && !strcmp($1->left->right->name,"("))){
+																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") ||
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tadd edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
@@ -247,13 +262,14 @@ expression:
 															else if(!strcmp($1->left->name,"INT")){
 																fputs("\tmov eax,",fp);
 																fprintf(fp,"%d\n",$1->left->value);
-																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(")){
+																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") ||
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tadd edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
 																	fputs("\tadd eax,",fp);
 																	fprintf(fp,"%d\n",$3->left->value);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}
 																}
@@ -262,7 +278,7 @@ expression:
 																	fputs("dword [ebp-",fp);
 																	fprintf(fp,"%d",base.using_table->findSymbol($3->left->idname)->getOffset());
 																	fputs("]\n",fp);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}
 																}
@@ -274,13 +290,14 @@ expression:
 																fprintf(fp,"%d",base.using_table->findSymbol($1->left->idname)->getOffset());
 																fputs("]\n",fp);
 																
-																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(")){
+																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") ||
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tadd edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
 																	fputs("\tadd eax,",fp);
 																	fprintf(fp,"%d\n",$3->left->value);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}																
 																}
@@ -289,19 +306,21 @@ expression:
 																	fputs("dword [ebp-",fp);
 																	fprintf(fp,"%d",base.using_table->findSymbol($3->left->idname)->getOffset());
 																	fputs("]\n",fp);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}	
 																}
 																else{}																
 															}
 															else{}
-															count++;
+															base.using_table->flag++;
 															printf("加法");																				
 														}
     | expression '-' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);
-															if(!strcmp($1->left->name,"expression") || !strcmp($1->left->name,"(")){
-																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(")){
+															if(!strcmp($1->left->name,"expression") || !strcmp($1->left->name,"(") || 
+																($1->left->right!=NULL && !strcmp($1->left->name,"ID") && !strcmp($1->left->right->name,"("))){
+																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") || 
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tsub edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
@@ -321,13 +340,14 @@ expression:
 															else if(!strcmp($1->left->name,"INT")){
 																fputs("\tmov eax,",fp);
 																fprintf(fp,"%d\n",$1->left->value);
-																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(")){
+																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") || 
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tsub edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
 																	fputs("\tsub eax,",fp);
 																	fprintf(fp,"%d\n",$3->left->value);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}
 																}
@@ -336,7 +356,7 @@ expression:
 																	fputs("dword [ebp-",fp);
 																	fprintf(fp,"%d",base.using_table->findSymbol($3->left->idname)->getOffset());
 																	fputs("]\n",fp);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}
 																}
@@ -348,13 +368,14 @@ expression:
 																fprintf(fp,"%d",base.using_table->findSymbol($1->left->idname)->getOffset());
 																fputs("]\n",fp);
 																
-																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(")){
+																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") ||
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tsub edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
 																	fputs("\tsub eax,",fp);
 																	fprintf(fp,"%d\n",$3->left->value);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}																
 																}
@@ -363,19 +384,21 @@ expression:
 																	fputs("dword [ebp-",fp);
 																	fprintf(fp,"%d",base.using_table->findSymbol($3->left->idname)->getOffset());
 																	fputs("]\n",fp);
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}	
 																}
 																else{}																
 															}
 															else{}
-															count++;
+															base.using_table->flag++;
 															printf("减法");
 														}
     | expression '*' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);													
-															if(!strcmp($1->left->name,"expression")||!strcmp($1->left->name,"(")){
-																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(")){
+															if(!strcmp($1->left->name,"expression")||!strcmp($1->left->name,"(") ||
+																($1->left->right!=NULL && !strcmp($1->left->name,"ID") && !strcmp($1->left->right->name,"("))){
+																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(") ||
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\timul edx,eax\n",fp);
 																}
 																else{
@@ -402,11 +425,9 @@ expression:
 																	fputs("]\n",fp);
 																}
 																
-																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(")){
+																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(") ||
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\timul edx,eax\n",fp);
-																	if(count==1){
-																		fputs("\tmov edx,eax\n",fp);
-																	}
 																}
 																else{
 																	fputs("\timul eax,",fp);
@@ -419,17 +440,19 @@ expression:
 																		fputs("]\n",fp);
 																	}
 																	else{}
-																	if(count==1){
+																	if(base.using_table->flag==1){
 																		fputs("\tmov edx,eax\n",fp);
 																	}
 																}
 															}
-															count++;																					
+															base.using_table->flag++;																					
 															printf("乘法");
 														}
     | expression '/' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);
-															if(!strcmp($1->left->name,"expression")||!strcmp($1->left->name,"(")){
-																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(")){
+															if(!strcmp($1->left->name,"expression")||!strcmp($1->left->name,"(") || 
+																($1->left->right!=NULL && !strcmp($1->left->name,"ID") && !strcmp($1->left->right->name,"("))){
+																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(") ||
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tmov ebx,eax\n",fp);
 																	fputs("\tmov eax,edx\n",fp);
 																	fputs("\tpush edx\n",fp);
@@ -453,6 +476,7 @@ expression:
 																	fputs("\tcdq\n",fp);
 																	fputs("\tidiv ebx\n",fp);
 																	fputs("\tpop edx\n",fp);
+																	fputs("\tmov edx,eax\n",fp);
 																}
 															}
 															else{
@@ -466,7 +490,8 @@ expression:
 																	fputs("]\n",fp);
 																}
 																
-																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(")){
+																if(!strcmp($3->left->name,"expression")||!strcmp($3->left->name,"(") || 
+																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
 																	fputs("\tmov ebx,edx\n",fp);
 																	fputs("\tpush edx\n",fp);
 																	fputs("\tcdq\n",fp);
@@ -488,24 +513,23 @@ expression:
 																	fputs("\tcdq\n",fp);
 																	fputs("\tidiv ebx\n",fp);
 																	fputs("\tpop edx\n",fp);
-																	
-
 																}
 															}
-															if(count==1){
+															if(base.using_table->flag==1){
 																fputs("\tmov edx,eax\n",fp);
 															}
-															count++;																					
+															base.using_table->flag++;																					
 															printf("除法");
 														}
     | expression '%' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
     | expression '^' expression                         { if(!canCalculate($1,$3))yyerror("can't calculate!");$$ = newAstnode("expression","",3,$1,$2,$3);}
     | '(' expression ')'                                { $$ = newAstnode("expression","",3,$1,$2,$3);
-															if(!strcmp($2->left->name,"expression")||!strcmp($2->left->name,"(")){
+															if(!strcmp($2->left->name,"expression")||!strcmp($2->left->name,"(") || 
+																($2->left->right!=NULL && !strcmp($2->left->name,"ID") && !strcmp($2->left->right->name,"("))){
 
 															}
-															else if((!strcmp($2->left->name,"INT"))&&($2->left->right==NULL)){
-																if(count==1){
+															else if((!strcmp($2->left->name,"INT"))){
+																if(base.using_table->flag==1){
 																	fputs("\tmov edx,",fp);
 																}
 																else{
@@ -513,8 +537,8 @@ expression:
 																}
 																fprintf(fp,"%d\n",$2->left->value);
 															}
-															else if((!strcmp($2->left->name,"ID"))&&($2->left->right==NULL)){
-																if(count==1){
+															else if((!strcmp($2->left->name,"ID"))){
+																if(base.using_table->flag==1){
 																	fputs("\tmov edx,",fp);
 																}
 																else{
@@ -525,7 +549,7 @@ expression:
 																fputs("]\n",fp);
 															}
 															else{}
-															count++;
+															base.using_table->flag++;
 															printf("括号");
 														}
     | '-' expression                                    { $$ = newAstnode("expression","",2,$1,$2);
@@ -533,7 +557,7 @@ expression:
 																
 															}
 															else if((!strcmp($2->left->name,"INT"))){
-																if(count==1){
+																if(base.using_table->flag==1){
 																	fputs("\tmov edx,",fp);
 																	fprintf(fp,"%d\n",$2->left->value);
 																	fputs("\txor ebx,ebx\n",fp);
@@ -549,7 +573,7 @@ expression:
 																}
 															}
 															else if((!strcmp($2->left->name,"ID"))){
-																if(count==1){
+																if(base.using_table->flag==1){
 																	fputs("\tmov edx,",fp);
 																	fputs("dword [ebp-",fp);
 																	fprintf(fp,"%d",base.using_table->findSymbol($2->left->idname)->getOffset());
@@ -569,12 +593,90 @@ expression:
 																}
 															}
 															else{}
-															count++;
+															base.using_table->flag++;
 															printf("负号");
 														}
     | NOT expression                                    { $$ = newAstnode("expression","",2,$1,$2);}
-    | ID '(' Args ')'                                   { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");if(base.using_table->findSymbol($1->idname)->getParam()!=$3->funcParam)yyerror("The number of parameters does not match!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
-    | ID '(' ')'                                        { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");if(base.using_table->findSymbol($1->idname)->getParam()!=0)yyerror("The number of parameters does not match!");$$ = newAstnode("expression","",3,$1,$2,$3);}
+    | ID '(' Args ')'                                   { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");
+															if(base.using_table->findSymbol($1->idname)->getParam()!=funcParam)yyerror("The number of parameters does not match!");
+															$$ = newAstnode("expression","",4,$1,$2,$3,$4);
+															printf("paramNum:%d",funcParam);
+															
+															temp = $3;
+															
+															for(int i=0;i<funcParam;i++){																
+																if(!strcmp(temp->left->name,"Args")){
+																	if(!strcmp(temp->left->right->left->name,"INT")){
+																		fputs("\tmov eax,[ebp-",fp);
+																		fprintf(fp,"%d",temp->left->right->left->value);																	
+																		fputs("]\n",fp);
+																		fputs("\tpush eax\n",fp);
+																		temp = temp->left;
+																	}
+																	else if(!strcmp(temp->left->right->left->name,"ID")){
+																		int of = base.using_table->findSymbol(temp->left->right->left->idname)->getOffset();
+																		fputs("\tmov eax,[ebp-",fp);
+																		fprintf(fp,"%d",of);																	
+																		fputs("]\n",fp);
+																		fputs("\tpush eax\n",fp);																																		
+																		temp = temp->left;
+																	}
+																	
+																}
+																else if(!strcmp(temp->left->name,"expression")){
+																	if(!strcmp(temp->left->left->name,"INT")){
+																		fputs("\tmov eax,[ebp-",fp);
+																		fprintf(fp,"%d",temp->left->right->left->value);																	
+																		fputs("]\n",fp);
+																		fputs("\tpush eax\n",fp);
+																		temp = temp->left;
+																	}
+																	else if(!strcmp(temp->left->left->name,"ID")){
+																		int of = base.using_table->findSymbol(temp->left->left->idname)->getOffset();
+																		fputs("\tmov eax,[ebp-",fp);
+																		fprintf(fp,"%d",of);																	
+																		fputs("]\n",fp);
+																		fputs("\tpush eax\n",fp);	
+																	}																															
+																}
+															}
+															int d = 4;
+															for(int i=0;i<funcParam;i++){
+																if(i==0){
+																	fputs("\tmov eax,[esp]\n",fp);
+																	fputs("\tmov [esp-",fp);
+																	fprintf(fp,"%d",(funcParam+2)*4-i*d);
+																	fputs("],eax\n",fp);
+																}
+																else{
+																	fputs("\tmov eax,[esp+",fp);
+																	fprintf(fp,"%d",i*d);
+																	fputs("]\n",fp);
+																	fputs("\tmov [esp-",fp);
+																	fprintf(fp,"%d",(funcParam+2)*4-i*d);
+																	fputs("],eax\n",fp);
+																}
+															}
+															fputs("\tcall ",fp);
+															fputs($1->idname,fp);
+															fputs("\n",fp);
+															if(base.using_table->flag==1){
+																fputs("\tmov edx,eax\n",fp);
+															}
+															base.using_table->flag++;
+															funcParam = 1;
+														}
+    | ID '(' ')'                                        { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");
+															if(base.using_table->findSymbol($1->idname)->getParam()!=0)yyerror("The number of parameters does not match!");
+															$$ = newAstnode("expression","",3,$1,$2,$3);	
+															fputs("\tcall ",fp);
+															fputs($1->idname,fp);
+															fputs("\n",fp);
+															if(base.using_table->flag==1){
+																fputs("\tmov edx,eax\n",fp);
+															}
+															base.using_table->flag++;
+														}
     | expression '[' expression ']'                     { $$ = newAstnode("expression","",4,$1,$2,$3,$4);}
     | ID                                                { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",1,$1);}
     | ID '[' expression ']'                             { if(base.using_table->findSymbol($1->idname)==NULL) yyerror("ERROR: haven`t declaration!");$$ = newAstnode("expression","",4,$1,$2,$3,$4);}
@@ -582,8 +684,8 @@ expression:
 	| error ')'                                         { yyerrok; }
     ;
 Args: 
-    Args ',' expression                                 { $$ = newAstnode("Args","",2,$1,$3);$$->funcParam+=1;}
-    | expression                                        { $$ = newAstnode("Args","",1,$1);$$->funcParam=1;}
+    Args ',' expression                                 { $$ = newAstnode("Args","",2,$1,$3);funcParam+=1;}
+    | expression                                        { $$ = newAstnode("Args","",1,$1);funcParam=1;}
     ;
 
 %%
@@ -615,9 +717,7 @@ int main(int args, char **argv){
     yyin = fopen(argv[1],"r");
     yyparse();
     fclose(yyin);
-	fputs("\tmov esp,ebp\n",fp);
-	fputs("\tpop ebp\n",fp);
-	fputs("\tret\n",fp);	
+	
 	
 	fputs("section .data\n",fp);
 	fputs("\tformat db 'eax:%d ebx:%d ecx:%d edx:%d  ',0    ;set the form of int\n",fp);

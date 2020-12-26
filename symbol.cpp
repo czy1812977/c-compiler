@@ -35,37 +35,8 @@ bool canCalculate(ASTNode* a1,ASTNode* a3){
 		else if(!strcmp(a3->left->right->name,"("))flag2 = true;
 	}else{}
 
-/*	if(a3->left->idname==NULL||
-		(base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::integer)||
-		((base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::Array)&&(a3->left->right->name=="["))){
-			flag2 = true;
-		}*/
 	if(flag1&&flag2)return true;
 	return false;
-/*	
-	if(a1->left->idname!=NULL){
-		if(a3->left->idname!=NULL){
-			if((base.using_table->findSymbol(a1->left->idname)->getIdType()==symbolType::integer)||
-				((base.using_table->findSymbol(a1->left->idname)->getIdType()==symbolType::Array)&&(a1->left->right->name=="["))||
-				(base.using_table->findSymbol(a1->left->right->right->idname)->getIdType()== ymbolType::integer))
-
-			&& 
-				base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::integer){
-					return true;
-				}
-			else{
-				return false;
-			}
-		}else{
-			return true;
-		}
-	}else if(a3->left->idname!=NULL){
-		if(base.using_table->findSymbol(a3->left->idname)->getIdType()==symbolType::integer)return true;
-		else return false;
-	}	
-	return true;
-	
-	*/
 }
 
 symbol::symbol(){
@@ -141,8 +112,10 @@ symbolTable* symbolTable::createSon(){
     return SST;
 }
 void symbolTable::deletetable(){
+	//temp=this->using_table->getTatalOffset();
     this->tablelist.pop_back();
     this->using_table=tablelist.back();
+	//temp=this->using_table->totalOffset+temp;
 }
 symbol* symbolTable::findSymbol(std::string name){
     std::unordered_map<std::string, symbol *>::iterator i;
@@ -171,6 +144,9 @@ void symbolTable::addFromTemp(){
         this->parent->templist.pop_back();
     }
 
+};
+int symbolTable::getTatalOffset(){
+	return this->totalOffset;
 };
 symbolTable base;
 int funcflag=-1;

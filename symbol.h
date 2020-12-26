@@ -51,6 +51,8 @@ class symbolTable
         std::vector<symbolTable*>tablelist;
         symbolTable* parent; 
         int isbase;
+		int flag = 1;
+		int getTatalOffset();
         symbolTable* using_table;
         void deletetable();
         symbolTable();
