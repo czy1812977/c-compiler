@@ -6,10 +6,10 @@ int main() {
 	int d = 20;
 	int e = 4;
 	printf_int(e);
+	int i =0;
 	for(int i= 0;i<10;i=i+1){
-		for(int i=0;i<10;i=i+1)
-		{
-			c=c+func(i,i);
+		for(int i= 0;i<10;i=i+1){
+			
 		}
 	}
 	printf_int(c);

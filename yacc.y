@@ -80,6 +80,7 @@ external_declaration_list:
 variable_declaration: 
     ID                                                  {  
 															$$ = newAstnode("variable_declaration","",1,$1);
+															if(forflag==1)if(base.using_table->findSymbol($1->idname)) yyerror("ERROR: repeated declaration!");
 															if(base.using_table->addSymbol($1->idname,symbolType::integer) ==-1) yyerror("ERROR: repeated declaration!");
 		
 			
@@ -583,7 +584,8 @@ expression:
 																fprintf(fp,"%d\n",$1->left->value);
 																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") || 
 																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
-																	fputs("\tsub edx,eax\n",fp);
+																	fputs("\tsub eax,edx\n",fp);
+																	fputs("\tmov edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
 																	fputs("\tsub eax,",fp);
@@ -611,7 +613,8 @@ expression:
 																
 																if(!strcmp($3->left->name,"expression") || !strcmp($3->left->name,"(") ||
 																	($3->left->right!=NULL && !strcmp($3->left->name,"ID") && !strcmp($3->left->right->name,"("))){
-																	fputs("\tsub edx,eax\n",fp);
+																	fputs("\tsub eax,edx\n",fp);
+																	fputs("\tmov edx,eax\n",fp);
 																}
 																else if(!strcmp($3->left->name,"INT")){
 																	fputs("\tsub eax,",fp);
@@ -796,7 +799,7 @@ expression:
     | '-' expression                                    { $$ = newAstnode("expression","",2,$1,$2);
 															if(!strcmp($2->left->name,"expression")||!strcmp($2->left->name,"(")||
 																($2->left->right!=NULL && !strcmp($2->left->name,"ID") && !strcmp($2->left->right->name,"("))){
-																
+																fputs("\t\n",fp);
 															}
 															else if((!strcmp($2->left->name,"INT"))){
 																if(base.using_table->flag==1){
