@@ -5,6 +5,10 @@
 #include <vector>
 #include "gramtree.h"
 #define OFFSET 4
+
+const char* mystrcat(std::string parentName,int num);
+const char* toCharStar(std::string parentName);
+
 enum class symbolType
 {
     integer = 0,
@@ -47,12 +51,15 @@ class symbolTable
         symbol *ifExist(std::string name);
         int addSymbol(symbol *s);     
     public:
+	    std::string tableName = "T";
+	    int childNum = 0;		
         std::vector<symbol*>templist;
         std::vector<symbolTable*>tablelist;
         symbolTable* parent; 
         int isbase;
 		int flag = 1;
-		int getTatalOffset();
+		int getTotalOffset();
+		void setTotalOffset(int totalOffset);
         symbolTable* using_table;
         void deletetable();
         symbolTable();
@@ -64,8 +71,9 @@ class symbolTable
         int addArraySymbol(std::string name,int length);
         symbolTable* createSon();
         symbol* findSymbol(std::string name);
-		void addFuncOffset();
 };
 extern symbolTable base;
 extern int funcflag;
+extern int forflag;
+extern FILE *fp;
 #endif

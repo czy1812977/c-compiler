@@ -100,22 +100,26 @@ int symbolTable::addArraySymbol(std::string name,int length){
     this->totalOffset+=length*4;
     return this->addSymbol(s);
 }
-void symbolTable::addFuncOffset(){
-	this->parent->totalOffset += this->totalOffset-4;
-}
 symbolTable* symbolTable::createSon(){
     symbolTable *SST=new symbolTable();
+	this->using_table->childNum++;
+	SST->tableName = this->using_table->tableName + "_" + std::to_string(this->using_table->childNum);
+	std::cout<<SST->tableName<<std::endl;
     SST->parent=this->using_table;
+	if(funcflag==-1){
+		SST->setTotalOffset(this->using_table->getTotalOffset());
+	}
+	funcflag=-1;
     SST->isbase=1;
     this->tablelist.push_back(SST);
     this->using_table=SST;
     return SST;
 }
 void symbolTable::deletetable(){
-	//temp=this->using_table->getTatalOffset();
+	int temp=this->using_table->getTotalOffset();
     this->tablelist.pop_back();
     this->using_table=tablelist.back();
-	//temp=this->using_table->totalOffset+temp;
+	this->using_table->totalOffset+=temp;
 }
 symbol* symbolTable::findSymbol(std::string name){
     std::unordered_map<std::string, symbol *>::iterator i;
@@ -138,6 +142,7 @@ int symbolTable::addIntoTemp(std::string name,symbolType type){
 }
 void symbolTable::addFromTemp(){
     int length=this->parent->templist.size();
+	std::cout<<length;
     for (int i=1;i<=length;i++)
     {
         this->addSymbol(this->parent->templist.back()->getIdName(),this->parent->templist.back()->getIdType());
@@ -145,9 +150,29 @@ void symbolTable::addFromTemp(){
     }
 
 };
-int symbolTable::getTatalOffset(){
+int symbolTable::getTotalOffset(){
 	return this->totalOffset;
 };
+
+void symbolTable::setTotalOffset(int totalOffset){
+	this->totalOffset = totalOffset;
+}
+
+const char* mystrcat(std::string parentName,int num)
+{
+	std::string a= parentName + "_" + std::to_string(num);
+	const char* p =a.data();
+	return p;
+}
+const char* toCharStar(std::string parentName)
+{
+	std::string a= parentName;
+	const char* p =a.data();
+	return p;
+}
 symbolTable base;
 int funcflag=-1;
+int forflag=-1;
+FILE *fp = fopen("output.asm","a+");
+symbol*print_int;
 

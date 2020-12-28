@@ -7,6 +7,7 @@
 #include "symbol.h"
 #include "gramtree.h"
 #include "yacc.tab.h"
+
 extern FILE * yyin;
 extern YYSTYPE yylval;
 extern int yylineno;
@@ -31,10 +32,18 @@ ws    {delim}+
 "void"                            { yylval.ast = newAstnode("TYPE",yytext,0,yylineno); return(TYPE);}
 "main"                            { yylval.ast = newAstnode("ID",yytext,0,yylineno); return(ID);}
 "return"                          { yylval.ast = newAstnode("RETURN",yytext,0,yylineno);return(RETURN); }
-"for"                             { yylval.ast = newAstnode("FOR",yytext,0,yylineno);return(FOR);}
+"for"                             { forflag=1;base.createSon();yylval.ast = newAstnode("FOR",yytext,0,yylineno);return(FOR);}
 "while"                           { yylval.ast = newAstnode("WHILE",yytext,0,yylineno);return(WHILE);}
-"if"                              { yylval.ast = newAstnode("IF",yytext,0,yylineno);return(IF); }
-"else"                            { yylval.ast = newAstnode("ELSE",yytext,0,yylineno);return(ELSE);}
+"if"                              { yylval.ast = newAstnode("IF",yytext,0,yylineno);return(IF); 
+									//fputs();
+									}
+"else"                            { 
+									fputs("\tjmp ",fp);
+									fputs(mystrcat(base.using_table->tableName,base.using_table->childNum+2),fp);
+									fputs("\n",fp);
+									yylval.ast = newAstnode("ELSE",yytext,0,yylineno);
+									return(ELSE);
+									}
 ";"                               { yylval.ast = newAstnode(";",yytext,0,yylineno);return(';'); }
 ","                               { yylval.ast = newAstnode(",",yytext,0,yylineno);return(','); }
 "="                               { yylval.ast = newAstnode("=",yytext,0,yylineno);return('='); }
@@ -57,8 +66,19 @@ ws    {delim}+
 ")"                               { yylval.ast = newAstnode(")",yytext,0,yylineno);return(')'); }
 "["                               { yylval.ast = newAstnode("[",yytext,0,yylineno);return('['); }
 "]"                               { yylval.ast = newAstnode("]",yytext,0,yylineno);return(']'); }
-"{"                               { base.createSon();base.using_table->addFromTemp(); yylval.ast = newAstnode("{",yytext,0,yylineno);return('{'); }
-"}"                               { base.using_table->addFuncOffset();base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
+"{"                               { 
+									fputs(mystrcat(base.using_table->tableName,base.using_table->childNum+1),fp);
+									fputs(":\n",fp);
+									base.createSon();	
+									printf("创建的表总偏移量：");									
+									printf("%d",base.using_table->getTotalOffset());						
+									base.using_table->addFromTemp();
+									forflag=-1;
+									yylval.ast = newAstnode("{",yytext,0,yylineno);
+									return('{'); 
+								  }
+"}"                               { base.deletetable();yylval.ast = newAstnode("}",yytext,0,yylineno);return('}'); }
+"printf_int"					  {return (PRINT_FUNC);}
 {L}({D}|{L})*                     { yylval.ast = newAstnode("ID",yytext,0,yylineno); return(ID); }
 {D}{L}({D}|{L})*                  { yylval.ast = newAstnode("ERRID",yytext,0,yylineno);return (ERRID); }
 [ \t\v\f\r]+                      { }

@@ -1,12 +1,31 @@
-int func(int i,int j,int k){
-	int a =5;
-	int c = 0;
-	c = (i+j)*a-k;
-	return c;
+int func(int i,int j){
+	return i+j;
 }
 int main() {
 	int c = 10;
 	int d = 20;
-	d = func(c,d,2)/2+3;
-	return d;
+	int e = 4;
+	printf_int(e);
+	for(int i= 0;i<10;i=i+1){
+		for(int i=0;i<10;i=i+1)
+		{
+			c=c+func(i,i);
+		}
+	}
+	printf_int(c);
+/*	if(c>=d){int a = 1;}
+	else{
+		if(2>0){
+			d = 0;
+		}
+		else{
+			d = 1;
+		}
+		int i=1;
+		int j=10;
+		e = i+j+1;
+	}
+	d = func(c,d,2)/2+3+e;
+	*/
+	return 0;
 }
