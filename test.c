@@ -1,31 +1,17 @@
-int func(int i,int j){
-	return i+j;
+int func(int a){
+	if(a==0)return 0;
+	if(a==1)return 1;
+
+	return (func(a-1));
+	
 }
-int main() {
-	int c = 10;
-	int d = 20;
-	int e = 4;
-	printf_int(e);
-	int i =0;
-	for(int i= 0;i<10;i=i+1){
-		for(int i= 0;i<10;i=i+1){
-			
-		}
-	}
-	printf_int(c);
-/*	if(c>=d){int a = 1;}
-	else{
-		if(2>0){
-			d = 0;
-		}
-		else{
-			d = 1;
-		}
-		int i=1;
-		int j=10;
-		e = i+j+1;
-	}
-	d = func(c,d,2)/2+3+e;
-	*/
-	return 0;
+int main(){
+    int a = 4;
+    int b = 3;
+    int c = func(a);
+    printf_int(c);
+    return 0;
 }
+
+/*预期输出：30
+实际输出：30*/

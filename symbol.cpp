@@ -97,6 +97,7 @@ int symbolTable::addArraySymbol(std::string name,int length){
     symbol *s =new symbol(name,symbolType::Array);
     s->setIndex(this->using_table->symbolItemCount++);
     s->setOffset(this->using_table->totalOffset);
+	s->setLength(length);
     this->totalOffset+=length*4;
     return this->addSymbol(s);
 }

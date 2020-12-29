@@ -27,6 +27,7 @@ class symbol
         int offset;
         int index;
 		int value;
+		int length;
     public: 
 		symbolType Type;
         symbol();
@@ -36,10 +37,12 @@ class symbol
         inline int getIndex() { return index; }
         inline int getParam() { return param; }
         inline int getValue() { return value; }
+        inline int getLength() { return length; }
         inline void setOffset(int offset) { this->offset = offset; }
         inline void setIndex(int index) { this->index = index; }
         inline void setParam(int param) { this->param = param; }
         inline void setValue(int value) { this->value = value; }
+        inline void setLength(int length) { this->length = length; }
         symbolType getIdType();
 };
 class symbolTable
