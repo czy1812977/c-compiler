@@ -1,12 +1,9 @@
 int func(int a){
-	if(a==0)return 0;
 	if(a==1)return 1;
-
-	return (func(a-1));
-	
+	//return func(1);	
 }
 int main(){
-    int a = 4;
+    int a = 1;
     int b = 3;
     int c = func(a);
     printf_int(c);

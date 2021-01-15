@@ -63,9 +63,9 @@ external_definition:
     TYPE external_declaration_list ';'                  { $$ = newAstnode("external_definition","",2,$1,$2);}
     | TYPE ';'                                          { $$ = newAstnode("external_definition","",1,$1);}
     | TYPE function_declaration  local_statement        { $$ = newAstnode("external_definition","",3,$1,$2,$3);
-															fputs("\tmov esp,ebp\n",fp);
-															fputs("\tpop ebp\n",fp);
-															fputs("\tret\n",fp);
+															//fputs("\tmov esp,ebp\n",fp);
+															//fputs("\tpop ebp\n",fp);
+															//fputs("\tret\n",fp);
 															funcflag=-1;
 														}    
 
@@ -1009,6 +1009,12 @@ int main(int args, char **argv){
 	fputs("\tmov esp, ebp\n",fp);
 	fputs("\tpop ebp\n",fp);
 	fputs("\tret\n",fp);
+	
+	fputs("exit:\n",fp);
+	fputs("\tmov esp,ebp\n",fp);
+	fputs("\tpop ebp\n",fp);
+	fputs("\tret\n",fp);
+	
     yyin = fopen(argv[1],"r");
     yyparse();
     fclose(yyin);
